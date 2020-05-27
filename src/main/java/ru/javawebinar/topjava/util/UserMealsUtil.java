@@ -9,6 +9,7 @@ import java.time.LocalTime;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class UserMealsUtil {
@@ -31,19 +32,25 @@ public class UserMealsUtil {
 
     public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         int caloriesSum = 0;
+        meals.sort(Comparator.comparing(UserMeal::getDateTime));
         LocalDate compareDate = meals.get(0).getDateTime().toLocalDate();
         List<UserMealWithExcess> userMealWithExcessList = new ArrayList<>();
-        UserMealWithExcess userMealWithExcess = null;
+        LocalDateTime tempLocalDateTime = null;
+        String description = null;
+        int calories = 0;
         for (UserMeal userMeal : meals) {
             if (userMeal.getDateTime().toLocalDate().equals(compareDate)) {
                 caloriesSum += userMeal.getCalories();
                 if (TimeUtil.isBetweenHalfOpen(userMeal.getDateTime().toLocalTime(), startTime, endTime)) {
-                    userMealWithExcess = new UserMealWithExcess(userMeal.getDateTime(), userMeal.getDescription(), userMeal.getCalories(), true);
+                    tempLocalDateTime = userMeal.getDateTime();
+                    description = userMeal.getDescription();
+                    calories = userMeal.getCalories();
                 }
-                if (caloriesSum >= caloriesPerDay) {
-                    userMealWithExcessList.add(userMealWithExcess);
+                if (caloriesSum > caloriesPerDay) {
+                    userMealWithExcessList.add(new UserMealWithExcess(tempLocalDateTime, description, calories, true));
                 }
             } else {
+                userMealWithExcessList.add(new UserMealWithExcess(tempLocalDateTime, description, calories, false));
                 caloriesSum = userMeal.getCalories();
                 compareDate = userMeal.getDateTime().toLocalDate();
             }
