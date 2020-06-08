@@ -10,8 +10,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class InMemoryMealStorage implements MealStorage {
     private final Map<Integer, Meal> storage = new ConcurrentHashMap<>();
-    private static final AtomicInteger nextId = new AtomicInteger();
-    protected static final Comparator<Meal> MEAL_COMPARATOR = Comparator.comparing(Meal::getDate).thenComparing(Meal::getTime);
+    private final AtomicInteger nextId = new AtomicInteger();
+    protected static final Comparator<Meal> MEAL_COMPARATOR = Comparator.comparing(Meal::getDateTime);
 
     public InMemoryMealStorage() {
         List<Meal> meals = Arrays.asList(
@@ -24,22 +24,20 @@ public class InMemoryMealStorage implements MealStorage {
                 new Meal(LocalDateTime.of(2020, Month.JANUARY, 31, 20, 0), "Ужин", 410)
         );
         for (Meal meal : meals) {
-            meal.setId(nextId.getAndIncrement());
-            storage.put(meal.getId(), meal);
+            create(meal);
         }
     }
 
     @Override
-    public Meal update(Meal meal, int id) {
-        storage.replace(id, meal);
-        return storage.get(id);
+    public Meal update(Meal meal) {
+        return storage.computeIfPresent(meal.getId(), (integer, oldMeal) -> meal);
     }
 
     @Override
     public Meal create(Meal meal) {
         meal.setId(nextId.getAndIncrement());
         storage.put(meal.getId(), meal);
-        return storage.get(nextId.get());
+        return storage.get(meal.getId());
     }
 
     @Override

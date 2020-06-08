@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -32,7 +33,8 @@ public class MealServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         String action = request.getParameter("action");
         if (action == null) {
-            request.setAttribute("mealsTo", MealsUtil.convertToMealToByStreams(mealStorage.getAllSorted(), DEFAULT_CALORIES_PER_DAY));
+            request.setAttribute("mealsTo", MealsUtil.filteredByStreams(mealStorage.getAllSorted(), LocalTime.MIN, LocalTime.MAX,
+                    DEFAULT_CALORIES_PER_DAY));
             request.getRequestDispatcher("/meals.jsp").forward(request, response);
             return;
         }
@@ -76,15 +78,13 @@ public class MealServlet extends HttpServlet {
         String calories = request.getParameter("calories");
         String date = request.getParameter("date");
         if (identifier != null && !identifier.trim().isEmpty()) {
-            mealStorage.update(new Meal(LocalDateTime.parse(date), description, Integer.parseInt(calories)), Integer.parseInt(identifier));
+            Meal meal = new Meal(LocalDateTime.parse(date), description, Integer.parseInt(calories));
+            meal.setId(Integer.parseInt(identifier));
+            mealStorage.update(meal);
         } else {
             mealStorage.create(new Meal(LocalDateTime.parse(date), description, Integer.parseInt(calories)));
         }
-        String caloriesPerDay = request.getParameter("caloriesPerDay");
-        if (!caloriesPerDay.isEmpty()) {
-            request.setAttribute("mealsTo", MealsUtil.convertToMealToByStreams(mealStorage.getAllSorted(), Integer.parseInt(caloriesPerDay)));
-        }
 
-        request.getRequestDispatcher("/meals.jsp").forward(request, response);
+        response.sendRedirect("meals");
     }
 }

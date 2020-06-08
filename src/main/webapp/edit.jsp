@@ -22,10 +22,6 @@
             <dt>Дата и время:</dt>
             <dd><input type="datetime-local" name="date" size=50 value="${meal.dateTime}"></dd>
         </dl>
-        <dl>
-            <dt>Новый порог калорий за день:</dt>
-            <dd><input type="number" name="caloriesPerDay" size=50 value="0"></dd>
-        </dl>
         <button type="submit">Сохранить</button>
         <button onclick="window.history.back()">Отменить</button>
     </form>
