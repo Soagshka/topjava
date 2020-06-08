@@ -12,15 +12,19 @@
         <input type="hidden" name="id" value="${meal.id}">
         <dl>
             <dt>Новое описание:</dt>
-            <dd><input type="text" name="description" size=50 value="${meal.description}"></dd>
+            <dd><input type="text" name="description" required size=50 value="${meal.description}"></dd>
         </dl>
         <dl>
             <dt>Количество калорий:</dt>
-            <dd><input type="text" name="calories" size=50 value="${meal.calories}"></dd>
+            <dd><input type="number" name="calories" size=50 value="${meal.calories}"></dd>
         </dl>
         <dl>
             <dt>Дата и время:</dt>
             <dd><input type="datetime-local" name="date" size=50 value="${meal.dateTime}"></dd>
+        </dl>
+        <dl>
+            <dt>Новый порог калорий за день:</dt>
+            <dd><input type="number" name="caloriesPerDay" size=50 value="0"></dd>
         </dl>
         <button type="submit">Сохранить</button>
         <button onclick="window.history.back()">Отменить</button>
