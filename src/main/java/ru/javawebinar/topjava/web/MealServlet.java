@@ -33,7 +33,7 @@ public class MealServlet extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         String id = request.getParameter("id");
 
-        Meal meal = new Meal(id.isEmpty() ? null : Integer.valueOf(id),
+        Meal meal = new Meal(id.isEmpty() ? null : Integer.valueOf(id), 1,
                 LocalDateTime.parse(request.getParameter("dateTime")),
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories")));
@@ -49,16 +49,17 @@ public class MealServlet extends HttpServlet {
 
         switch (action == null ? "all" : action) {
             case "delete":
-                int id = getId(request);
+                int id = getId(request, "id");
                 log.info("Delete {}", id);
-                repository.delete(id);
+                repository.delete(id, getId(request, "userId"));
                 response.sendRedirect("meals");
                 break;
             case "create":
             case "update":
+                int userId = getId(request, "userId");
                 final Meal meal = "create".equals(action) ?
-                        new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000) :
-                        repository.get(getId(request));
+                        new Meal(userId, LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000) :
+                        repository.get(getId(request, "id"), userId);
                 request.setAttribute("meal", meal);
                 request.getRequestDispatcher("/mealForm.jsp").forward(request, response);
                 break;
@@ -72,8 +73,11 @@ public class MealServlet extends HttpServlet {
         }
     }
 
-    private int getId(HttpServletRequest request) {
-        String paramId = Objects.requireNonNull(request.getParameter("id"));
+    private int getId(HttpServletRequest request, String identity) {
+        if (identity.equals("userId")) {
+            return 1;
+        }
+        String paramId = Objects.requireNonNull(request.getParameter(identity));
         return Integer.parseInt(paramId);
     }
 }
