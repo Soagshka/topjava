@@ -37,7 +37,7 @@ public class InMemoryUserRepository implements UserRepository {
         if (repository.get(user.getId()) != null) {
             return repository.computeIfPresent(user.getId(), (id, oldUser) -> user);
         }
-        throw new NotFoundException("No such user");
+        return null;
     }
 
     @Override

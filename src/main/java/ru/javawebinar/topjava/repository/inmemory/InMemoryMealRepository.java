@@ -35,29 +35,25 @@ public class InMemoryMealRepository implements MealRepository {
             repository.put(meal.getId(), meal);
             return meal;
         }
-        Meal mealFromRepoById = repository.get(meal.getId());
-        if (mealFromRepoById != null
-                && userIdCheck(mealFromRepoById.getId(), userId)) {
+        if (get(meal.getId(), userId) != null) {
             meal.setUserId(userId);
             return repository.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
         }
-        throw new NotFoundException("No such meal with id = " + meal.getId());
+        return null;
     }
 
     @Override
     public boolean delete(int id, Integer userId) {
         log.info("delete {} for userId {}", id, userId);
-        if (userIdCheck(id, userId)) {
-            return repository.remove(id) != null;
-        }
-        return false;
+        return (get(id, userId) != null) && repository.remove(id) != null;
     }
 
     @Override
     public Meal get(int id, Integer userId) {
         log.info("get {} for userId {}", id, userId);
-        if (userIdCheck(id, userId)) {
-            return repository.get(id);
+        Meal meal = repository.get(id);
+        if (meal != null) {
+            return (userId.equals(meal.getUserId())) ? meal : null;
         }
         return null;
     }
@@ -69,7 +65,7 @@ public class InMemoryMealRepository implements MealRepository {
                 .values()
                 .stream()
                 .filter(meal -> userId.equals(meal.getUserId()))
-                .sorted(Comparator.comparing(Meal::getDate).reversed().thenComparing(Meal::getDateTime).reversed())
+                .sorted(Comparator.comparing(Meal::getDateTime).reversed())
                 .collect(Collectors.toList());
     }
 
@@ -84,10 +80,6 @@ public class InMemoryMealRepository implements MealRepository {
                 .filter(meal -> userId.equals(meal.getUserId()))
                 .sorted(Comparator.comparing(Meal::getDateTime).reversed())
                 .collect(Collectors.toList());
-    }
-
-    private boolean userIdCheck(int id, Integer userId) {
-        return userId.equals(repository.get(id).getUserId());
     }
 }
 
